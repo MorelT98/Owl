@@ -1,6 +1,6 @@
 import Foundation
 
-public enum Result {
+public enum Result: Codable {
     case success, failure, ungracefulEnd
 }
 
@@ -39,7 +39,7 @@ public class Owl {
         return true
     }
     
-    public func label(key: String, val: Any) -> Bool {
+    public func label(key: String, val: Codable) -> Bool {
         guard let last = steps.last else {
             print("Attempting to add a label without starting the event. Aborting.")
             return false

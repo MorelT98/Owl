@@ -9,14 +9,14 @@ import Foundation
 
 class Step {
     let name: String
-    var labels: [String:Any]
+    var labels: [String:Codable]
     
     init(_ name: String) {
         self.name = name
         self.labels = [:]
     }
     
-    func label(key: String, val: Any) {
+    func label(key: String, val: Codable) {
         self.labels[key] = val
     }
 }
