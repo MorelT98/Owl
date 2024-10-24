@@ -13,7 +13,7 @@ class Step {
     
     init(_ name: String) {
         self.name = name
-        self.labels = [:]
+        self.labels = ["time_ms":Date().timeIntervalSince1970 * 1000]
     }
     
     func label(key: String, val: Codable) {
