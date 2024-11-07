@@ -16,6 +16,9 @@ final class OwlTests: XCTestCase {
         owl.start()
         
         XCTAssertTrue(owl.step("TEST_STEP"))
+        
+        XCTAssertFalse(owl.step("start"))
+        XCTAssertFalse(owl.step("end"))
     }
     
     func testLabel() {

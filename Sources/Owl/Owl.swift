@@ -4,6 +4,8 @@ public enum Result: Codable {
     case success, failure, ungracefulEnd
 }
 
+private let DISSALLOWED_NAMES: Set<String> = ["start", "end"]
+
 public class Owl {
     
     private let event: String
@@ -25,6 +27,10 @@ public class Owl {
     }
     
     public func step(_ name: String) -> Bool {
+        if DISSALLOWED_NAMES.contains(name) {
+            print("The name \(name) is dissallowed as a step name. Aborting.")
+            return false
+        }
         guard let last = steps.last else {
             print("Attempting to add a step without starting the event. Aborting.")
             return false
