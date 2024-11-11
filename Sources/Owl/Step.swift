@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Morel Fotsing on 10/19/24.
-//
-
 import Foundation
 
 class Step {
