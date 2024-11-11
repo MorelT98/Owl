@@ -4,8 +4,8 @@ import XCTest
 final class EventTests: XCTestCase {
 
     func testNewInstance() {
-        let event = Event()
-        XCTAssertNotNil(event.getNewInstance())
+        let event = Event(name: "TEST_EVENT")
+        XCTAssertNotNil(event.newInstance())
     }
 
 }

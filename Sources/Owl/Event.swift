@@ -1,15 +1,17 @@
 import Foundation
 
 public class Event {
-    private var instances: [UUID:EventInstance]
+    public let name: String
+    internal var instances: [UUID:EventInstance]
     
-    public init() {
+    public init(name: String) {
+        self.name = name
         instances = [:]
     }
     
-    public func getNewInstance() -> EventInstance {
+    public func newInstance() -> EventInstance {
         let id = UUID()
-        instances[id] = EventInstance(id: id)
+        instances[id] = EventInstance(name: name, id: id)
         return instances[id]!
     }
 }

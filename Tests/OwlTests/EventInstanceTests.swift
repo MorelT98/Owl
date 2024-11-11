@@ -4,7 +4,7 @@ import XCTest
 final class EventInstanceTests: XCTestCase {
     
     func testStart() {
-        let event = EventInstance(id: UUID())
+        let event = Owl.newEvent(name: "TEST_NAME")
         
         XCTAssertTrue(event.start())
         
@@ -12,7 +12,7 @@ final class EventInstanceTests: XCTestCase {
     }
     
     func testStep() {
-        let event = EventInstance(id: UUID())
+        let event = Owl.newEvent(name: "TEST_NAME")
         event.start()
         
         XCTAssertTrue(event.step("TEST_STEP"))
@@ -22,20 +22,20 @@ final class EventInstanceTests: XCTestCase {
     }
     
     func testLabel() {
-        let event = EventInstance(id: UUID())
+        let event = Owl.newEvent(name: "TEST_NAME")
         XCTAssertFalse(event.label(key: "key1", val: "val1"))
         
         event.start()
         XCTAssertTrue(event.label(key: "key1", val: "val1"))
     }
     
-    func testClose() {
-        let event = EventInstance(id: UUID())
-        XCTAssertFalse(event.close(result: .success))
+    func testEnd() {
+        let event = Owl.newEvent(name: "TEST_NAME")
+        XCTAssertFalse(event.end(result: .success))
         
         event.start()
-        XCTAssertTrue(event.close(result: .success))
+        XCTAssertTrue(event.end(result: .success))
         
-        XCTAssertFalse(event.close(result: .success))
+        XCTAssertFalse(event.end(result: .success))
     }
 }

@@ -4,7 +4,7 @@ import XCTest
 final class OwlTests: XCTestCase {
 
     func testNewEvent() {
-        let event = Owl.getNewEvent(name: "TEST_EVENT")
+        let event = Owl.newEvent(name: "TEST_EVENT")
         XCTAssertNotNil(event)
     }
 

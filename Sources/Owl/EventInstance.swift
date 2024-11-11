@@ -1,79 +1,34 @@
 import Foundation
 
-public enum Result: Codable {
-    case success, failure, ungracefulEnd
-}
-
-private let DISSALLOWED_NAMES: Set<String> = ["start", "end"]
-
 public class EventInstance {
     public let id: UUID
-    private var steps: [Step]
+    public let name: String
+    internal var steps: [Step]
     
-    public init(id: UUID) {
+    public init(name: String, id: UUID) {
+        self.name = name
         self.id = id
         steps = []
     }
     
     public func start() -> Bool {
-        if !steps.isEmpty {
-            print("event already ongoing")
-            return false
-        }
-        
-        steps.append(Step("start"))
-        return true
+        return Owl.start(eventName: name, id: id)
     }
     
     public func step(_ name: String) -> Bool {
-        if DISSALLOWED_NAMES.contains(name) {
-            print("The name \(name) is dissallowed as a step name. Aborting.")
-            return false
-        }
-        guard let last = steps.last else {
-            print("Attempting to add a step without starting the event. Aborting.")
-            return false
-        }
-        
-        if last.name == "end" {
-            print("Attempting to add a step after the event has ended. Aborting.")
-            return false
-        }
-        
-        steps.append(Step(name))
-        return true
+        return Owl.step(eventName: self.name, id: id, stepName: name)
     }
     
     public func label(key: String, val: Codable) -> Bool {
-        guard let last = steps.last else {
-            print("Attempting to add a label without starting the event. Aborting.")
-            return false
-        }
-        last.label(key: key, val: val)
-        return true
+        return Owl.label(eventName: name, id: id, key: key, val: val)
     }
     
     
-    public func close(result: Result) -> Bool {
-        guard let last = steps.last else {
-            print("Attempting to close an event without starting it. Aborting.")
-            return false
-        }
-        
-        if last.name == "end" {
-            print("Event already ended. Aborting.")
-            return false
-        }
-        
-        steps.append(Step("end"))
-        label(key: "result", val: result)
-        
-        // Send data over the network here
-        
-        return true
+    public func end(result: Result) -> Bool {
+        return Owl.end(eventName: name, id: id, result: result)
     }
     
     deinit {
-        close(result: .ungracefulEnd)
+        Owl.end(eventName: name, id: id, result: .ungracefulEnd)
     }
 }
