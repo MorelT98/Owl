@@ -1,6 +1,6 @@
 import Foundation
 
-public enum Result: String {
+public enum Result: String, CaseIterable {
     case success = "success"
     case failure = "failure"
     case ungracefulEnd = "ungracefulEnd"
@@ -31,6 +31,7 @@ public class Owl {
     public static func newEvent(name: String) -> EventInstance {
         if !initialized {
             executor.scheduleTask(publishUpdates, interval: publishInterval)
+            // Initialize WebSocket connection here
             initialized = true
         }
         if events.index(forKey: name) == nil {
@@ -135,7 +136,7 @@ public class Owl {
             return false
         }
         
-        var step = Step("end")
+        let step = Step("end")
         step.label(key: "result", val: result.rawValue)
         event.steps.append(step)
         
@@ -156,7 +157,31 @@ public class Owl {
             guard let updateJSON = JSONEncode(update) else {continue}
             data += updateJSON
         }
+        sendData(data)
         print(String(data:data, encoding: .utf8)!)
+    }
+    
+    private static func sendData(_ data: Data) {
+        var request = URLRequest(url: URL(string: "example.com")!)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        do {
+            request.httpBody = try JSONEncoder().encode(data)
+        } catch {
+            print("Error encoding post data: \(error)")
+            return
+        }
+        URLSession.shared.dataTask(with: request) {data, response, error in
+            if let error = error {
+                print("Error sending request: \(error)")
+                return
+            }
+            if let data = data {
+//              let response = try JSONDecoder().decode(APIResponse.self, from: data)
+                print("Response: \(String(describing: response))")
+                print("Data: \(data)")
+            }
+        }.resume()
     }
     
     private static func JSONEncode(_ update: Update) -> Data? {
