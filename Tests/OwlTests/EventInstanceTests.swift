@@ -45,10 +45,10 @@ final class EventInstanceTests: XCTestCase {
         XCTAssertTrue(event.step("TEST_STEP"))
         XCTAssertEqual(event.steps.count, 2)
         XCTAssertEqual(event.steps.last?.name, "TEST_STEP")
-        XCTAssertEqual(Owl.updates.count, updateCount + 2)
+        XCTAssertEqual(Owl.shared.updates.count, updateCount + 2)
         
-        XCTAssertTrue(Owl.updates.last is StepUpdate)
-        let update = Owl.updates.last as! StepUpdate
+        XCTAssertTrue(Owl.shared.updates.last is StepUpdate)
+        let update = Owl.shared.updates.last as! StepUpdate
         XCTAssertEqual(update.eventId, event.id)
         XCTAssertEqual(update.eventName, event.name)
         XCTAssertEqual(update.stepName, "TEST_STEP")
@@ -66,8 +66,8 @@ final class EventInstanceTests: XCTestCase {
         XCTAssertTrue(event.label(key: "key1", val: "val1"))
         XCTAssertNotNil(event.steps.last?.labels.index(forKey: "key1"))
         
-        XCTAssertTrue(Owl.updates.last is LabelUpdate)
-        let update = Owl.updates.last as! LabelUpdate
+        XCTAssertTrue(Owl.shared.updates.last is LabelUpdate)
+        let update = Owl.shared.updates.last as! LabelUpdate
         XCTAssertEqual(update.eventName, event.name)
         XCTAssertEqual(update.eventId, event.id)
         XCTAssertEqual(update.stepName, "start")
@@ -84,8 +84,8 @@ final class EventInstanceTests: XCTestCase {
         XCTAssertEqual(event.steps.last?.name, "end")
         XCTAssertNotNil(event.steps.last?.labels.index(forKey: "result"))
         
-        XCTAssertTrue(Owl.updates.last is EndUpdate)
-        let update = Owl.updates.last as! EndUpdate
+        XCTAssertTrue(Owl.shared.updates.last is EndUpdate)
+        let update = Owl.shared.updates.last as! EndUpdate
         XCTAssertEqual(update.eventName, event.name)
         XCTAssertEqual(update.eventId, event.id)
         XCTAssertEqual(update.result, .success)

@@ -22,9 +22,9 @@ final class OwlTests: XCTestCase {
         event.label(key: "k3", val: "v3")
         event.end(result: .success)
         event.end(result: .failure)
-        XCTAssertEqual(Owl.updates.count, 7)
+        XCTAssertEqual(Owl.shared.updates.count, 7)
         Thread.sleep(forTimeInterval: 2.0)
-        XCTAssertTrue(Owl.updates.isEmpty)
+        XCTAssertTrue(Owl.shared.updates.isEmpty)
     }
 
 }
