@@ -2,6 +2,10 @@ import XCTest
 @testable import Owl
 
 final class OwlTests: XCTestCase {
+    
+    override func setUp() {
+        Owl.disableDataSend()
+    }
 
     func testNewEvent() {
         let event = Owl.newEvent(name: "TEST_EVENT")
@@ -9,7 +13,6 @@ final class OwlTests: XCTestCase {
     }
     
     func testUpdatesOnOneEvent() {
-        Owl.setPublishTimeInterval(to: 1.0)
         let event = Owl.newEvent(name: "TEST_EVENT")
         event.start()
         event.step("TEST_STEP1")

@@ -12,23 +12,23 @@ public class EventInstance {
     }
     
     public func start() -> Bool {
-        return Owl.start(eventName: name, id: id)
+        return Owl.shared.start(eventName: name, id: id)
     }
     
     public func step(_ name: String) -> Bool {
-        return Owl.step(eventName: self.name, id: id, stepName: name)
+        return Owl.shared.step(eventName: self.name, id: id, stepName: name)
     }
     
     public func label(key: String, val: Codable) -> Bool {
-        return Owl.label(eventName: name, id: id, key: key, val: val)
+        return Owl.shared.label(eventName: name, id: id, key: key, val: val)
     }
     
     
     public func end(result: Result) -> Bool {
-        return Owl.end(eventName: name, id: id, result: result)
+        return Owl.shared.end(eventName: name, id: id, result: result)
     }
     
     deinit {
-        Owl.end(eventName: name, id: id, result: .ungracefulEnd)
+        Owl.shared.end(eventName: name, id: id, result: .ungracefulEnd)
     }
 }

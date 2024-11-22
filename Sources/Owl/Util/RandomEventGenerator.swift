@@ -1,32 +1,38 @@
 import Foundation
 
 public class RandomEventGenerator {
-    private var nEvents = Int.random(in: 5..<11)
-    private var events: [EventInstance] = []
+    private var nEvents: Int
+    private var events: [EventInstance]
     
     public init(nEvents: Int? = nil) {
         if nEvents != nil {
             self.nEvents = nEvents!
+        } else {
+            self.nEvents = Int.random(in: 5..<11)
         }
+        self.events = []
     }
 
     public func run() {
         generateEvents()
         generateStepsAndLabels()
         closeEvents()
+        
+        print("Sleeping to let events being sent to the server...")
+        Thread.sleep(forTimeInterval: 60)
     }
     
     private func generateEvents() {
         print("Generating events...")
         for i in 0..<nEvents {
-            let id = Int.random(in: 1..<(nEvents / 3))
+            let id = Int.random(in: 1..<nEvents)
             let eventName = "event#" + String(id)
             let event = Owl.newEvent(name: eventName)
             if event.start() {
                 events.append(event)
             }
-            nEvents = events.count
         }
+        nEvents = events.count
         print("\(nEvents) generated.")
     }
     

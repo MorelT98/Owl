@@ -3,11 +3,13 @@ import Foundation
 class Step {
     let name: String
     let time: Int64
+    let number: Int
     var labels: [String:Codable]
     
-    init(_ name: String) {
-        self.name = name
+    init(name: String, number: Int) {
         self.time = Int64(CFAbsoluteTimeGetCurrent() * 1000)
+        self.name = name
+        self.number = number
         self.labels = [:]
     }
     

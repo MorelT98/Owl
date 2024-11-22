@@ -7,14 +7,15 @@ final class EventInstanceTests: XCTestCase {
     var updateCount = 0;
     
     override func setUp() {
-        eventCount = Owl.events[eventName]?.instances.count ?? 0
-        updateCount = Owl.updates.count
+        Owl.disableDataSend()
+        eventCount = Owl.shared.events[eventName]?.instances.count ?? 0
+        updateCount = Owl.shared.updates.count
     }
     
     func testNewEvent() {
         let event = Owl.newEvent(name: eventName)
-        XCTAssertNotNil(Owl.events.index(forKey: event.name))
-        XCTAssertEqual(Owl.events[eventName]!.instances.count, eventCount + 1)
+        XCTAssertNotNil(Owl.shared.events.index(forKey: event.name))
+        XCTAssertEqual(Owl.shared.events[eventName]!.instances.count, eventCount + 1)
     }
     
     func testStart() {
@@ -23,8 +24,8 @@ final class EventInstanceTests: XCTestCase {
         XCTAssertTrue(event.start())
         XCTAssertEqual(event.steps.count, 1)
         XCTAssertTrue(event.steps.contains(where: {$0.name == "start"}))
-        XCTAssertEqual(Owl.updates.count, updateCount + 1)
-        let update = Owl.updates.last!
+        XCTAssertEqual(Owl.shared.updates.count, updateCount + 1)
+        let update = Owl.shared.updates.last!
         XCTAssertTrue(update is StartUpdate)
         XCTAssertTrue(update.eventId == event.id)
         XCTAssertTrue(update.eventName == event.name)
@@ -32,7 +33,7 @@ final class EventInstanceTests: XCTestCase {
         
         XCTAssertFalse(event.start())
         XCTAssertEqual(event.steps.count, 1)
-        XCTAssertEqual(Owl.updates.count, updateCount + 1)
+        XCTAssertEqual(Owl.shared.updates.count, updateCount + 1)
     }
     
     func testStep() {

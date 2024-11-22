@@ -14,33 +14,25 @@ private let MAX_CAPACITY = 20
 
 public class Owl {
     
-    internal static var events: [String:Event] = [:]
+    internal var events: [String:Event] = [:]
+    internal var updates: [Update] = []
+    internal var executor: PeriodicExecutor = PeriodicExecutor()
+    internal static let shared = Owl()
+    internal var enableDataSend = true
     
-    internal static var updates: [Update] = []
-    
-    internal static var executor: PeriodicExecutor = PeriodicExecutor()
-    
-    internal static var initialized = false
-    
-    internal static var publishInterval = PUBLISH_INTERVAL
-        
-    internal static func setPublishTimeInterval(to newPublishInterval: TimeInterval) {
-        publishInterval = newPublishInterval
+    private init() {
+        executor.scheduleTask(publishUpdates, interval: PUBLISH_INTERVAL)
+        // Initialize WebSocket connection here
     }
     
     public static func newEvent(name: String) -> EventInstance {
-        if !initialized {
-            executor.scheduleTask(publishUpdates, interval: publishInterval)
-            // Initialize WebSocket connection here
-            initialized = true
+        if shared.events.index(forKey: name) == nil {
+            shared.events[name] = Event(name: name)
         }
-        if events.index(forKey: name) == nil {
-            events[name] = Event(name: name)
-        }
-        return events[name]!.newInstance()
+        return shared.events[name]!.newInstance()
     }
     
-    private static func sanityCheckEvent(_ eventName: String, _ id: UUID) -> Bool {
+    private func sanityCheckEvent(_ eventName: String, _ id: UUID) -> Bool {
         if events.index(forKey: eventName) == nil {
             return false
         }
@@ -57,24 +49,24 @@ public class Owl {
             - Updating the Event instance itself
             - Updating the queue of updates maintained by the Owl class
      */
-    internal static func start(eventName: String, id: UUID) -> Bool {
+    internal func start(eventName: String, id: UUID) -> Bool {
         if !sanityCheckEvent(eventName, id) {
             return false
         }
-        let event = Owl.events[eventName]!.instances[id]!
+        let event = events[eventName]!.instances[id]!
         if !event.steps.isEmpty {
             print("event already ongoing")
             return false
         }
         
-        event.steps.append(Step("start"))
+        event.steps.append(Step(name: "start", number: 0))
         
         updates.append(StartUpdate(eventName: eventName, eventId: id))
         
         return true
     }
     
-    internal static func step(eventName: String, id: UUID, stepName: String) -> Bool {
+    internal func step(eventName: String, id: UUID, stepName: String) -> Bool {
         if(!sanityCheckEvent(eventName, id)) {
             return false
         }
@@ -83,7 +75,7 @@ public class Owl {
             return false
         }
 
-        guard let last = Owl.events[eventName]!.instances[id]!.steps.last else {
+        guard let last = events[eventName]!.instances[id]!.steps.last else {
             print("Attempting to add a step without starting the event. Aborting.")
             return false
         }
@@ -93,38 +85,39 @@ public class Owl {
             return false
         }
         
-        let step = Step(stepName)
-        Owl.events[eventName]!.instances[id]!.steps.append(step)
+        let stepNumber = events[eventName]!.instances[id]!.steps.count
+        let step = Step(name: stepName, number: stepNumber)
+        events[eventName]!.instances[id]!.steps.append(step)
         
-        updates.append(StepUpdate(eventName: eventName, eventId: id, stepName: stepName, stepTime: step.time))
+        updates.append(StepUpdate(eventName: eventName, eventId: id, stepName: stepName, stepNumber: stepNumber, stepTime: step.time))
         
         return true
     }
     
-    internal static func label(eventName: String, id: UUID, key: String,  val: Codable) -> Bool {
+    internal func label(eventName: String, id: UUID, key: String,  val: Codable) -> Bool {
         if !sanityCheckEvent(eventName, id) {
             return false
         }
         
-        if Owl.events[eventName]!.instances[id]!.steps.last == nil {
+        if events[eventName]!.instances[id]!.steps.last == nil {
             print("Attempting to add a label without starting the event. Aborting.")
             return false
         }
-        Owl.events[eventName]!.instances[id]!.steps.last?.label(key: key, val: val)
+        events[eventName]!.instances[id]!.steps.last?.label(key: key, val: val)
         
-        let lastStepName = Owl.events[eventName]!.instances[id]!.steps.last!.name
+        let lastStepName = events[eventName]!.instances[id]!.steps.last!.name
         
         updates.append(LabelUpdate(eventName: eventName, eventId: id, stepName: lastStepName, key: key, val: val))
         
         return true
     }
     
-    internal static func end(eventName: String, id: UUID, result: Result) -> Bool {
+    internal func end(eventName: String, id: UUID, result: Result) -> Bool {
         if !sanityCheckEvent(eventName, id) {
             return false
         }
         
-        let event = Owl.events[eventName]!.instances[id]!
+        let event = events[eventName]!.instances[id]!
         
         guard let lastStep = event.steps.last else {
             print("Attempting to close an event without starting it. Aborting.")
@@ -136,7 +129,7 @@ public class Owl {
             return false
         }
         
-        let step = Step("end")
+        let step = Step(name: "end", number: event.steps.count)
         step.label(key: "result", val: result.rawValue)
         event.steps.append(step)
         
@@ -145,53 +138,60 @@ public class Owl {
         return true
     }
     
-    private static func publishUpdates() {
+    private func publishUpdates() {
         let updatesCount = min(MAX_CAPACITY, updates.count)
         if updatesCount == 0 {
             return
         }
         
-        var data = "".data(using: .utf8)!
+        let encoder = JSONEncoder()
+        var data: [[String: Any]] = []
+        
         for _ in 1...updatesCount {
             let update = updates.removeFirst()
-            guard let updateJSON = JSONEncode(update) else {continue}
-            data += updateJSON
+            do {
+                let encodedUpdate = try encoder.encode(update)
+                if let jsonObject = try JSONSerialization.jsonObject(with: encodedUpdate, options: []) as? [String: Any] {
+                    data.append(jsonObject)
+                }
+            } catch {
+                print("Error encoding update: \(error)")
+                continue
+            }
         }
-        sendData(data)
-        print(String(data:data, encoding: .utf8)!)
+        
+        print("\n\ndata to send: \(data)\n\n")
+        
+        if enableDataSend {
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: data, options: [])
+                sendData(jsonData)
+            } catch {
+                print("Error serializing data array: \(data)")
+            }
+        }
+        
     }
     
-    private static func sendData(_ data: Data) {
-        var request = URLRequest(url: URL(string: "example.com")!)
+    private func sendData(_ data: Data) {
+        let serverIP = "10.0.0.16"
+        var request = URLRequest(url: URL(string: "http://localhost:3000/receive")!)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        do {
-            request.httpBody = try JSONEncoder().encode(data)
-        } catch {
-            print("Error encoding post data: \(error)")
-            return
-        }
+            request.httpBody = data
         URLSession.shared.dataTask(with: request) {data, response, error in
             if let error = error {
                 print("Error sending request: \(error)")
                 return
             }
             if let data = data {
-//              let response = try JSONDecoder().decode(APIResponse.self, from: data)
                 print("Response: \(String(describing: response))")
                 print("Data: \(data)")
             }
         }.resume()
     }
     
-    private static func JSONEncode(_ update: Update) -> Data? {
-        let encoder = JSONEncoder()
-        do {
-            let jsonData = try encoder.encode(update)
-            return jsonData
-        } catch {
-            print("Error encoding update \(update)")
-            return nil
-        }
+    internal static func disableDataSend() {
+        shared.enableDataSend = false
     }
 }

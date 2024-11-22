@@ -5,6 +5,7 @@ fileprivate enum UpdateFields: String, CodingKey {
     case eventName
     case eventId
     case stepName
+    case stepNumber
     case stepTime
     case labelKey
     case labelVal
@@ -48,9 +49,11 @@ class StartUpdate: Update {
 class StepUpdate: Update {
     internal let stepName: String
     internal let stepTime: Int64
+    internal let stepNumber: Int
     
-    init(eventName: String, eventId: UUID, stepName: String, stepTime: Int64) {
+    init(eventName: String, eventId: UUID, stepName: String, stepNumber: Int, stepTime: Int64) {
         self.stepName = stepName
+        self.stepNumber = stepNumber
         self.stepTime = stepTime
         super.init(eventName: eventName, eventId: eventId)
     }
@@ -62,6 +65,7 @@ class StepUpdate: Update {
         try container.encode(self.eventId, forKey: .eventId)
         try container.encode(self.stepName, forKey: .stepName)
         try container.encode(self.stepTime, forKey: .stepTime)
+        try container.encode(self.stepNumber, forKey: .stepNumber)
     }
 }
 
