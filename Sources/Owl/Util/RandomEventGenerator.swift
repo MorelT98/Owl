@@ -26,7 +26,7 @@ public class RandomEventGenerator {
         print("Generating events...")
         for i in 0..<nEvents {
             let id = Int.random(in: 1..<nEvents)
-            let eventName = "event#" + String(id)
+            let eventName = "event_" + String(id)
             let event = Owl.newEvent(name: eventName)
             if event.start() {
                 events.append(event)
@@ -45,7 +45,7 @@ public class RandomEventGenerator {
             }
             
             // Generate steps
-            let stepName = "step#" + String(Int.random(in: 1..<100))
+            let stepName = "step_" + String(Int.random(in: 1..<100))
             event.step(stepName)
             
             // Generate Labels

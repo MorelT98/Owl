@@ -59,9 +59,10 @@ public class Owl {
             return false
         }
         
-        event.steps.append(Step(name: "start", number: 0))
+        let start = Step(name: "start", number: 0)
+        event.steps.append(start)
         
-        updates.append(StartUpdate(eventName: eventName, eventId: id))
+        updates.append(StartUpdate(eventName: eventName, eventId: id, timestamp: start.time))
         
         return true
     }
@@ -105,9 +106,9 @@ public class Owl {
         }
         events[eventName]!.instances[id]!.steps.last?.label(key: key, val: val)
         
-        let lastStepName = events[eventName]!.instances[id]!.steps.last!.name
+        let lastStep = events[eventName]!.instances[id]!.steps.last!
         
-        updates.append(LabelUpdate(eventName: eventName, eventId: id, stepName: lastStepName, key: key, val: val))
+        updates.append(LabelUpdate(eventName: eventName, eventId: id, stepName: lastStep.name, stepNumber: lastStep.number, key: key, val: val))
         
         return true
     }
@@ -133,7 +134,7 @@ public class Owl {
         step.label(key: "result", val: result.rawValue)
         event.steps.append(step)
         
-        updates.append(EndUpdate(eventName: eventName, eventId: id, result: result))
+        updates.append(EndUpdate(eventName: eventName, eventId: id, result: result, timestamp: step.time, stepNumber: step.number))
         
         return true
     }
@@ -174,8 +175,8 @@ public class Owl {
     }
     
     private func sendData(_ data: Data) {
-        let serverIP = "10.0.0.16"
-        var request = URLRequest(url: URL(string: "http://localhost:3000/receive")!)
+        let serverIP = "localhost"
+        var request = URLRequest(url: URL(string: "http://\(serverIP):3000/receive")!)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = data
@@ -186,7 +187,7 @@ public class Owl {
             }
             if let data = data {
                 print("Response: \(String(describing: response))")
-                print("Data: \(data)")
+                print("Data: \(String(decoding: data, as: UTF8.self))")
             }
         }.resume()
     }
