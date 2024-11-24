@@ -1,5 +1,10 @@
 import Foundation
 
+/**
+ * Tracks all the instances of an event.
+ * This allows the developer to create multiple event (instances)
+ *  with the same event name
+ */
 public class Event {
     public let name: String
     internal var instances: [UUID:EventInstance]

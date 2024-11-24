@@ -12,6 +12,10 @@ private let DISSALLOWED_NAMES: Set<String> = ["start", "end"]
 private let PUBLISH_INTERVAL: TimeInterval = 1
 private let MAX_CAPACITY = 20
 
+/**
+ * Singleton that tracks the evolution of all the active events
+ * and pushed periodic updates to the server
+ */
 public class Owl {
     
     internal var events: [String:Event] = [:]
@@ -25,6 +29,9 @@ public class Owl {
         // Initialize WebSocket connection here
     }
     
+    /**
+     * Returns a new event instance with the given event name
+     */
     public static func newEvent(name: String) -> EventInstance {
         if shared.events.index(forKey: name) == nil {
             shared.events[name] = Event(name: name)
@@ -32,7 +39,7 @@ public class Owl {
         return shared.events[name]!.newInstance()
     }
     
-    private func sanityCheckEvent(_ eventName: String, _ id: UUID) -> Bool {
+    private func eventExists(_ eventName: String, _ id: UUID) -> Bool {
         if events.index(forKey: eventName) == nil {
             return false
         }
@@ -50,7 +57,7 @@ public class Owl {
             - Updating the queue of updates maintained by the Owl class
      */
     internal func start(eventName: String, id: UUID) -> Bool {
-        if !sanityCheckEvent(eventName, id) {
+        if !eventExists(eventName, id) {
             return false
         }
         let event = events[eventName]!.instances[id]!
@@ -68,7 +75,7 @@ public class Owl {
     }
     
     internal func step(eventName: String, id: UUID, stepName: String) -> Bool {
-        if(!sanityCheckEvent(eventName, id)) {
+        if(!eventExists(eventName, id)) {
             return false
         }
         if DISSALLOWED_NAMES.contains(stepName) {
@@ -90,13 +97,13 @@ public class Owl {
         let step = Step(name: stepName, number: stepNumber)
         events[eventName]!.instances[id]!.steps.append(step)
         
-        updates.append(StepUpdate(eventName: eventName, eventId: id, stepName: stepName, stepNumber: stepNumber, stepTime: step.time))
+        updates.append(StepUpdate(eventName: eventName, eventId: id, name: stepName, number: stepNumber, timestamp: step.time))
         
         return true
     }
     
     internal func label(eventName: String, id: UUID, key: String,  val: Codable) -> Bool {
-        if !sanityCheckEvent(eventName, id) {
+        if !eventExists(eventName, id) {
             return false
         }
         
@@ -114,7 +121,7 @@ public class Owl {
     }
     
     internal func end(eventName: String, id: UUID, result: Result) -> Bool {
-        if !sanityCheckEvent(eventName, id) {
+        if !eventExists(eventName, id) {
             return false
         }
         

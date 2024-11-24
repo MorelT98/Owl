@@ -13,7 +13,6 @@ fileprivate enum UpdateFields: String, CodingKey {
 }
 
 fileprivate enum UpdateTypes: String {
-    case start
     case step
     case label
     case end
@@ -37,32 +36,15 @@ class Update: Encodable {
     }
 }
 
-class StartUpdate: Update {
-    internal let timestamp: Int64
-    
-    init(eventName: String, eventId: UUID, timestamp: Int64) {
-        self.timestamp = timestamp
-        super.init(eventName: eventName, eventId: eventId)
-    }
-    
-    override func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: UpdateFields.self)
-        try container.encode(UpdateTypes.start.rawValue, forKey: .updateType)
-        try container.encode(eventName, forKey: .eventName)
-        try container.encode(eventId, forKey: .eventId)
-        try container.encode(timestamp, forKey: .timestamp)
-    }
-}
-
 class StepUpdate: Update {
-    internal let stepName: String
-    internal let stepTime: Int64
-    internal let stepNumber: Int
+    internal let name: String
+    internal let timestamp: Int64
+    internal let number: Int
     
-    init(eventName: String, eventId: UUID, stepName: String, stepNumber: Int, stepTime: Int64) {
-        self.stepName = stepName
-        self.stepNumber = stepNumber
-        self.stepTime = stepTime
+    init(eventName: String, eventId: UUID, name: String, number: Int, timestamp: Int64) {
+        self.name = name
+        self.number = number
+        self.timestamp = timestamp
         super.init(eventName: eventName, eventId: eventId)
     }
     
@@ -71,9 +53,35 @@ class StepUpdate: Update {
         try container.encode(UpdateTypes.step.rawValue, forKey: .updateType)
         try container.encode(self.eventName, forKey: .eventName)
         try container.encode(self.eventId, forKey: .eventId)
-        try container.encode(self.stepName, forKey: .stepName)
-        try container.encode(self.stepTime, forKey: .timestamp)
-        try container.encode(self.stepNumber, forKey: .stepNumber)
+        try container.encode(self.name, forKey: .stepName)
+        try container.encode(self.timestamp, forKey: .timestamp)
+        try container.encode(self.number, forKey: .stepNumber)
+    }
+}
+
+class StartUpdate: StepUpdate {
+    
+    init(eventName: String, eventId: UUID, timestamp: Int64) {
+        super.init(eventName: eventName, eventId: eventId, name: "start", number: 0, timestamp: timestamp)
+    }
+}
+
+class EndUpdate: StepUpdate {
+    internal let result: Result
+    
+    init(eventName: String, eventId: UUID, result: Result, timestamp: Int64, stepNumber: Int) {
+        self.result = result
+        super.init(eventName: eventName, eventId: eventId, name: "end", number: stepNumber, timestamp: timestamp)
+    }
+    
+    override func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: UpdateFields.self)
+        try container.encode(UpdateTypes.end.rawValue, forKey: .updateType)
+        try container.encode(self.eventName, forKey: .eventName)
+        try container.encode(self.eventId, forKey: .eventId)
+        try container.encode(self.result.rawValue, forKey: .result)
+        try container.encode(self.timestamp, forKey: .timestamp)
+        try container.encode(self.number, forKey: .stepNumber)
     }
 }
 
@@ -100,28 +108,5 @@ class LabelUpdate: Update {
         try container.encode(self.stepNumber, forKey: .stepNumber)
         try container.encode(self.key, forKey: .labelKey)
         try container.encode(self.val, forKey: .labelVal)
-    }
-}
-
-class EndUpdate: Update {
-    internal let result: Result
-    internal let timestamp: Int64
-    internal let stepNumber: Int
-    
-    init(eventName: String, eventId: UUID, result: Result, timestamp: Int64, stepNumber: Int) {
-        self.result = result
-        self.timestamp = timestamp
-        self.stepNumber = stepNumber
-        super.init(eventName: eventName, eventId: eventId)
-    }
-    
-    override func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: UpdateFields.self)
-        try container.encode(UpdateTypes.end.rawValue, forKey: .updateType)
-        try container.encode(self.eventName, forKey: .eventName)
-        try container.encode(self.eventId, forKey: .eventId)
-        try container.encode(self.result.rawValue, forKey: .result)
-        try container.encode(self.timestamp, forKey: .timestamp)
-        try container.encode(self.stepNumber, forKey: .stepNumber)
     }
 }

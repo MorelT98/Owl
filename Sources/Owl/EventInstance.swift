@@ -1,5 +1,10 @@
 import Foundation
 
+/**
+ * Represents an instance of an event with the given event name
+ * An event instance object can be passed around to track multiple
+ * steps of a lifecycle.
+ */
 public class EventInstance {
     public let id: UUID
     public let name: String
