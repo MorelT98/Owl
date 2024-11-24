@@ -51,7 +51,7 @@ final class EventInstanceTests: XCTestCase {
         let update = Owl.shared.updates.last as! StepUpdate
         XCTAssertEqual(update.eventId, event.id)
         XCTAssertEqual(update.eventName, event.name)
-        XCTAssertEqual(update.stepName, "TEST_STEP")
+        XCTAssertEqual(update.name, "TEST_STEP")
         
         
         XCTAssertFalse(event.step("start"))
