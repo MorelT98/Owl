@@ -4,6 +4,7 @@ import XCTest
 final class OwlTests: XCTestCase {
     
     override func setUp() {
+        Owl.clearUpdates()
         Owl.disableDataSend()
     }
 

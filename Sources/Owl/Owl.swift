@@ -202,4 +202,8 @@ public class Owl {
     internal static func disableDataSend() {
         shared.enableDataSend = false
     }
+    
+    internal static func clearUpdates() {
+        Owl.shared.updates = []
+    }
 }
