@@ -19,7 +19,7 @@ public class RandomEventGenerator {
         closeEvents()
         
         print("Sleeping to let events being sent to the server...")
-        Thread.sleep(forTimeInterval: 60)
+        Thread.sleep(forTimeInterval: 60 * 1000)
     }
     
     private func generateEvents() {
@@ -38,7 +38,7 @@ public class RandomEventGenerator {
     
     private func generateStepsAndLabels() {
         print("Generating steps and labels...")
-        for i in 0..<100 {
+        for i in 0..<10 {
             // Choose a random event
             guard let event = events.randomElement() else {
                 continue

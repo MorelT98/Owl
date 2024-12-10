@@ -10,9 +10,11 @@ fileprivate enum UpdateFields: String, CodingKey {
     case labelKey
     case labelVal
     case result
+    case creationTime
 }
 
 fileprivate enum UpdateTypes: String {
+    case start
     case step
     case label
     case end
@@ -60,9 +62,22 @@ class StepUpdate: Update {
 }
 
 class StartUpdate: StepUpdate {
+    internal let creationTime: Int64
     
-    init(eventName: String, eventId: UUID, timestamp: Int64) {
+    init(eventName: String, eventId: UUID, timestamp: Int64, creationTime: Int64) {
+        self.creationTime = creationTime
         super.init(eventName: eventName, eventId: eventId, name: "start", number: 0, timestamp: timestamp)
+    }
+    
+    override func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: UpdateFields.self)
+        try container.encode(UpdateTypes.start.rawValue, forKey: .updateType)
+        try container.encode(self.eventName, forKey: .eventName)
+        try container.encode(self.eventId, forKey: .eventId)
+        try container.encode(self.name, forKey: .stepName)
+        try container.encode(self.timestamp, forKey: .timestamp)
+        try container.encode(self.number, forKey: .stepNumber)
+        try container.encode(self.creationTime, forKey: .creationTime)
     }
 }
 

@@ -56,7 +56,7 @@ public class Owl {
             - Updating the Event instance itself
             - Updating the queue of updates maintained by the Owl class
      */
-    internal func start(eventName: String, id: UUID) -> Bool {
+    internal func start(eventName: String, id: UUID, creationTime: Int64) -> Bool {
         if !eventExists(eventName, id) {
             return false
         }
@@ -69,7 +69,7 @@ public class Owl {
         let start = Step(name: "start", number: 0)
         event.steps.append(start)
         
-        updates.append(StartUpdate(eventName: eventName, eventId: id, timestamp: start.time))
+        updates.append(StartUpdate(eventName: eventName, eventId: id, timestamp: start.time, creationTime: creationTime))
         
         return true
     }
@@ -183,7 +183,7 @@ public class Owl {
     
     private func sendData(_ data: Data) {
         let serverIP = "localhost"
-        var request = URLRequest(url: URL(string: "http://\(serverIP):3000/receive")!)
+        var request = URLRequest(url: URL(string: "http://\(serverIP):3030/receive")!)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = data
