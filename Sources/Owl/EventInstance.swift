@@ -8,18 +8,16 @@ import Foundation
 public class EventInstance {
     public let id: UUID
     public let name: String
-    public let creationTime: Int64
     internal var steps: [Step]
     
     public init(name: String, id: UUID) {
         self.name = name
         self.id = id
-        self.creationTime = Int64(Date().timeIntervalSince1970)
         steps = []
     }
     
     public func start() -> Bool {
-        return Owl.shared.start(eventName: name, id: id, creationTime: creationTime)
+        return Owl.shared.start(eventName: name, id: id, creationTime: Int64(Date().timeIntervalSince1970))
     }
     
     public func step(_ name: String) -> Bool {
