@@ -56,7 +56,7 @@ public class Owl {
             - Updating the Event instance itself
             - Updating the queue of updates maintained by the Owl class
      */
-    internal func start(eventName: String, id: UUID, creationTime: Int64) -> Bool {
+    internal func start(eventName: String, id: UUID) -> Bool {
         if !eventExists(eventName, id) {
             return false
         }
@@ -69,7 +69,7 @@ public class Owl {
         let start = Step(name: "start", number: 0)
         event.steps.append(start)
         
-        updates.append(StartUpdate(eventName: eventName, eventId: id, timestamp: start.time, creationTime: creationTime))
+        updates.append(StartUpdate(eventName: eventName, eventId: id, timestamp: start.time))
         
         return true
     }

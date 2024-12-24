@@ -10,7 +10,6 @@ fileprivate enum UpdateFields: String, CodingKey {
     case labelKey
     case labelVal
     case result
-    case creationTime
 }
 
 fileprivate enum UpdateTypes: String {
@@ -62,10 +61,8 @@ class StepUpdate: Update {
 }
 
 class StartUpdate: StepUpdate {
-    internal let creationTime: Int64
     
-    init(eventName: String, eventId: UUID, timestamp: Int64, creationTime: Int64) {
-        self.creationTime = creationTime
+    init(eventName: String, eventId: UUID, timestamp: Int64) {
         super.init(eventName: eventName, eventId: eventId, name: "start", number: 0, timestamp: timestamp)
     }
     
@@ -77,7 +74,6 @@ class StartUpdate: StepUpdate {
         try container.encode(self.name, forKey: .stepName)
         try container.encode(self.timestamp, forKey: .timestamp)
         try container.encode(self.number, forKey: .stepNumber)
-        try container.encode(self.creationTime, forKey: .creationTime)
     }
 }
 

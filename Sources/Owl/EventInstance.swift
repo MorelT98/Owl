@@ -17,7 +17,7 @@ public class EventInstance {
     }
     
     public func start() -> Bool {
-        return Owl.shared.start(eventName: name, id: id, creationTime: Int64(Date().timeIntervalSince1970))
+        return Owl.shared.start(eventName: name, id: id)
     }
     
     public func step(_ name: String) -> Bool {
